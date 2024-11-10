@@ -16,7 +16,10 @@ export async function fetchImages(query, page, perPage) {
         per_page: perPage,
       },
     });
-    return response.data.hits;
+    return {
+      hits: response.data.hits,
+      totalHits: response.data.totalHits
+    };
   } catch (error) {
     throw new Error(`HTTP error! status: ${error.response.status}`);
   }
