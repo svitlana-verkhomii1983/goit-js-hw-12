@@ -77,7 +77,7 @@ loadMoreButton.addEventListener('click', async () => {
   try {
     const images = await fetchImages(query, page, perPage);
 
-    if (images.length === 0) {
+    if (page > perPage) {
       iziToast.info({
         title: 'End of Results',
         message: "We're sorry, but you've reached the end of search results.",
