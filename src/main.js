@@ -10,7 +10,6 @@ let currentPage = 1;
 const perPage = 15;
 let currentQuery = '';
 
-// Добавляем обработчик события focus для очистки поля ввода
 searchInput.addEventListener('focus', () => {
   searchInput.value = '';
 });
