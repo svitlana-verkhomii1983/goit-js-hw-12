@@ -7,7 +7,7 @@ const loadMoreButton = document.getElementById('load-more-button');
 const loader = document.getElementById('loader');
 const searchInput = document.getElementById('search-input');
 let currentPage = 1;
-const perPage = 40;
+const perPage = 15;
 let currentQuery = '';
 
 // Добавляем обработчик события focus для очистки поля ввода
