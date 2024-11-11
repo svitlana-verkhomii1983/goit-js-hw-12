@@ -7,7 +7,7 @@ const loadMoreButton = document.getElementById('load-more-button');
 const loader = document.getElementById('loader');
 const searchInput = document.getElementById('search-input');
 let currentPage = 1;
-const perPage = 15;
+const perPage = 18;
 let currentQuery = '';
 
 searchInput.addEventListener('focus', () => {
@@ -31,6 +31,7 @@ async function onSearchFormSubmit(event) {
 async function onLoadMoreButtonClick() {
   currentPage += 1;
   await fetchAndRenderImages(true);
+  smoothScroll();
 }
 
 async function fetchAndRenderImages(append = false) {
@@ -58,6 +59,14 @@ async function fetchAndRenderImages(append = false) {
     loader.style.display = 'none';
     showToast(`Error fetching images: ${error.message}`, 'error');
   }
+}
+
+function smoothScroll() {
+  const { height: cardHeight } = document.querySelector('.gallery').firstElementChild.getBoundingClientRect();
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
 }
 
 function showToast(message, type) {
