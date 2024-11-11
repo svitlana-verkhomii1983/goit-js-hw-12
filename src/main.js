@@ -1,100 +1,69 @@
-import { fetchImages } from './js/pixabay-api.js';
-import { renderGallery, clearGallery } from './js/render-functions.js';
+import { fetchImages } from './js/pixabay-api';
+import { renderGallery } from './js/render-functions';
 import iziToast from 'izitoast';
-import 'izitoast/dist/css/iziToast.min.css';
 
 const searchForm = document.getElementById('search-form');
 const loadMoreButton = document.getElementById('load-more-button');
 const loader = document.getElementById('loader');
 const searchInput = document.getElementById('search-input');
-
 let currentPage = 1;
-const perPage = 15;
+const perPage = 40;
 let currentQuery = '';
-let totalPages = 0;
 
+// Добавляем обработчик события focus для очистки поля ввода
 searchInput.addEventListener('focus', () => {
   searchInput.value = '';
 });
 
+searchForm.addEventListener('submit', onSearchFormSubmit);
+loadMoreButton.addEventListener('click', onLoadMoreButtonClick);
 
-function toggleLoader(show) {
-  loader.style.display = show ? 'block' : 'none';
-}
-
-searchForm.addEventListener('submit', async event => {
+async function onSearchFormSubmit(event) {
   event.preventDefault();
   currentQuery = searchInput.value.trim();
-  if (currentQuery === '') return;
-
+  if (currentQuery === '') {
+    showToast('Please enter a search query', 'info');
+    return;
+  }
   currentPage = 1;
-  clearGallery();
-  toggleLoader(true);
+  await fetchAndRenderImages();
+}
 
+async function onLoadMoreButtonClick() {
+  currentPage += 1;
+  await fetchAndRenderImages(true);
+}
+
+async function fetchAndRenderImages(append = false) {
+  loader.style.display = 'block';
   try {
     const { hits, totalHits } = await fetchImages(currentQuery, currentPage, perPage);
-    toggleLoader(false);
+    renderGallery(hits, append);
+    loader.style.display = 'none';
 
-    if (totalHits === 0) {
-      iziToast.warning({
-        title: 'No Results',
-        message: 'Sorry, there are no images matching your search query. Please try again.',
-        position: 'topRight',
-      });
-      return;
-    }
-
-    renderGallery(hits);
-    totalPages = Math.ceil(totalHits / perPage);
-
-    if (currentPage < totalPages) {
-      loadMoreButton.style.display = 'block';
+    if (hits.length < perPage || currentPage * perPage >= totalHits) {
+      loadMoreButton.style.display = 'none';
     } else {
-      loadMoreButton.style.display = 'none';
+      loadMoreButton.style.display = 'block';
     }
 
-    iziToast.success({
-      title: 'Success',
-      message: `Hooray! We found ${totalHits} images.`,
-      position: 'topRight',
-    });
+    if (currentPage === 1 && hits.length > 0) {
+      showToast(`Hooray! We found ${totalHits} images.`, 'success');
+    }
 
-  } catch (error) {
-    toggleLoader(false);
-    iziToast.error({
-      title: 'Error',
-      message: `Failed to fetch images: ${error.message}`,
-      position: 'topRight',
-    });
-  }
-});
-
-loadMoreButton.addEventListener('click', async () => {
-  currentPage += 1;
-  toggleLoader(true);
-
-  try {
-    const { hits } = await fetchImages(currentQuery, currentPage, perPage);
-    toggleLoader(false); //
-    renderGallery(hits, true);
-
-    // Smooth scroll
-    const { height: cardHeight } = document.querySelector('.gallery').firstElementChild.getBoundingClientRect();
-    window.scrollBy({
-      top: cardHeight * 2,
-      behavior: 'smooth',
-    });
-
-    if (currentPage >= totalPages) {
-      loadMoreButton.style.display = 'none';
+    if (hits.length === 0) {
+      showToast('Sorry, there are no images matching your search query. Please try again.', 'info');
     }
 
   } catch (error) {
-    toggleLoader(false);
-    iziToast.error({
-      title: 'Error',
-      message: `Failed to fetch images: ${error.message}`,
-      position: 'topRight',
-    });
+    loader.style.display = 'none';
+    showToast(`Error fetching images: ${error.message}`, 'error');
   }
-});
+}
+
+function showToast(message, type) {
+  iziToast[type]({
+    title: message,
+    position: 'topRight'
+  });
+}

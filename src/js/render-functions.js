@@ -7,53 +7,40 @@ export function renderGallery(images, append = false) {
   const gallery = document.getElementById('gallery');
   if (!append) gallery.innerHTML = '';
 
-  images.forEach(image => {
-    const photoCard = document.createElement('div');
-    photoCard.className = 'photo-card';
+  const markup = images.map(image => `
+    <div class="photo-card">
+      <a href="${image.largeImageURL}">
+        <img src="${image.webformatURL}" alt="${image.tags}" loading="lazy" />
+      </a>
+      <div class="info">
+        <div class="info-item">
+          <b>Likes</b>
+          <p>${image.likes}</p>
+        </div>
+        <div class="info-item">
+          <b>Views</b>
+          <p>${image.views}</p>
+        </div>
+        <div class="info-item">
+          <b>Comments</b>
+          <p>${image.comments}</p>
+        </div>
+        <div class="info-item">
+          <b>Downloads</b>
+          <p>${image.downloads}</p>
+        </div>
+      </div>
+    </div>
+  `).join('');
 
-    const imgElement = document.createElement('img');
-    imgElement.src = image.webformatURL;
-    imgElement.alt = image.tags;
-    imgElement.loading = 'lazy';
-
-    const infoDiv = document.createElement('div');
-    infoDiv.className = 'info';
-
-    const likes = document.createElement('div');
-    likes.className = 'info-item';
-    likes.innerHTML = `<b>Likes</b><p>${image.likes}</p>`;
-
-    const views = document.createElement('div');
-    views.className = 'info-item';
-    views.innerHTML = `<b>Views</b><p>${image.views}</p>`;
-
-    const comments = document.createElement('div');
-    comments.className = 'info-item';
-    comments.innerHTML = `<b>Comments</b><p>${image.comments}</p>`;
-
-    const downloads = document.createElement('div');
-    downloads.className = 'info-item';
-    downloads.innerHTML = `<b>Downloads</b><p>${image.downloads}</p>`;
-
-    infoDiv.appendChild(likes);
-    infoDiv.appendChild(views);
-    infoDiv.appendChild(comments);
-    infoDiv.appendChild(downloads);
-
-    photoCard.appendChild(imgElement);
-    photoCard.appendChild(infoDiv);
-
-    gallery.appendChild(photoCard);
-  });
+  gallery.insertAdjacentHTML('beforeend', markup);
 
   if (!lightbox) {
-    lightbox = new SimpleLightbox('.gallery a');
+    lightbox = new SimpleLightbox('.gallery a', {
+      captionsData: 'alt',
+      captionDelay: 250,
+    });
   } else {
     lightbox.refresh();
   }
-}
-
-export function clearGallery() {
-  const gallery = document.getElementById('gallery');
-  gallery.innerHTML = '';
 }
